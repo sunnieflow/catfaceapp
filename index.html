@@ -138,9 +138,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   line-height:1.6;margin-top:14px}
 .compare-box strong{color:var(--purple2)}
 /* OHAENG BADGE */
-.ohaeng{display:inline-block;font-size:.72rem;font-weight:700;color:var(--purple2);
-  background:rgba(124,92,191,.15);border:1px solid rgba(124,92,191,.3);
-  padding:3px 10px;border-radius:20px;margin-left:8px;font-family:'Noto Sans KR',sans-serif}
+.ohaeng{display:inline-block;font-size:1.3rem;font-weight:900;color:#fff;
+  background:linear-gradient(135deg,#3db87a,#2ecc71);
+  border:2px solid #2ecc71;
+  padding:6px 16px;border-radius:20px;margin-left:10px;
+  font-family:'Noto Serif KR',serif;
+  box-shadow:0 3px 12px rgba(46,204,113,.4);
+  vertical-align:middle}
 /* QUESTIONS */
 .q-num{font-size:.7rem;font-weight:700;color:var(--accent);letter-spacing:.1em;margin-bottom:6px}
 .q-text{font-size:.95rem;font-weight:600;font-family:'Noto Serif KR',serif;margin-bottom:10px}
@@ -213,6 +217,12 @@ canvas#cv{display:none}
   <span class="emoji">🐱</span>
   <h1>고양이 관상</h1>
   <p>사진 한 장으로 알아보는 기질 분석</p>
+  <p style="margin-top:8px">
+    <a href="privacy.html" target="_blank"
+       style="font-size:.72rem;color:var(--text3);text-decoration:underline">
+      개인정보처리방침
+    </a>
+  </p>
 </header>
 
 <div class="step-bar" id="stepBar">
@@ -227,8 +237,10 @@ canvas#cv{display:none}
 <!-- ══ STEP 1: 업로드 ══ -->
 <section class="screen active" id="s1">
   <div class="card">
-    <div class="ctitle"><span class="tag">STEP 1</span> 사진 업로드</div>
-    <p class="sub">고양이 정면 얼굴이 잘 보이는 사진을 올려주세요. 눈·귀·얼굴형을 자동으로 분석합니다.</p>
+    <div class="ctitle"><span class="tag">STEP 1</span> 시작하기</div>
+    <p class="sub">사진이 있으면 관상까지 분석할 수 있어요. 사진이 없어도 행동 질문으로 성향 분석이 가능합니다.</p>
+
+    <!-- 사진 업로드 영역 -->
     <div class="preview-wrap" id="prevWrap">
       <img id="prevImg" src="" alt="미리보기">
       <span class="change-btn" onclick="document.getElementById('fileInput').click()">다른 사진으로 바꾸기</span>
@@ -238,6 +250,7 @@ canvas#cv{display:none}
       <p><strong>탭하여 사진 선택</strong><br>고양이 정면 사진을 올려주세요</p>
     </div>
     <input type="file" id="fileInput" accept="image/*">
+
     <div class="analyzing" id="analyzing">
       <div class="spinner"></div>
       <p style="font-size:.85rem;color:var(--accent2);font-weight:600">관상 분석 중...</p>
@@ -250,8 +263,12 @@ canvas#cv{display:none}
       </div>
     </div>
   </div>
+
+  <!-- 버튼 2개 -->
   <p class="warn" id="uploadWarn">사진을 먼저 업로드해야 분석을 시작할 수 있습니다.</p>
-  <button class="btn btn-gold" id="btnStart" onclick="startAnalysis()" disabled>사진 분석 시작하기</button>
+  <button class="btn btn-gold" id="btnStart" onclick="startAnalysis()" disabled>사진으로 분석하기</button>
+  <button class="btn btn-purple" onclick="startWithoutPhoto()" style="margin-top:10px;opacity:0.85">사진 없이 시작하기</button>
+
   <div class="reset-wrap"><span class="reset-link" onclick="resetApp()">처음부터 다시하기</span></div>
 </section>
 
@@ -424,7 +441,7 @@ const PRODUCTS = {
   개척형:[
     { cat:'장난감',  name:'터널 장난감',          e:'🛷', url:'https://link.coupang.com/a/d77hxz' },   // 01
     { cat:'간식',    name:'동결건조 닭가슴살',    e:'🍗', url:'https://link.coupang.com/a/d77sXF' },   // 02
-    { cat:'건강용품',name:'관절에 좋은 영양제',   e:'💊', url:'https://link.coupang.com/a/d77JD2' },   // 03
+    { cat:'건강용품',name:'관절 영양제',           e:'💊', url:'https://link.coupang.com/a/d77JD2' },   // 03
   ],
   적응형:[
     { cat:'장난감',  name:'봉제 인형 장난감',     e:'🧸', url:'https://link.coupang.com/a/d7757t' },   // 04
@@ -478,7 +495,7 @@ const PRODUCTS = {
 // ════════════════════════════════════════════════════════
 let ST = {
   step:1, photoType:null, metrics:null, scores:null, signals:[],
-  qAnswers:{}, realType:null,
+  qAnswers:{}, realType:null, skipPhoto:false,
 };
 
 // ════════════════════════════════════════════════════════
@@ -714,9 +731,15 @@ function makeSignals(g) {
 // ════════════════════════════════════════════════════════
 // ANALYSIS FLOW
 // ════════════════════════════════════════════════════════
+function startWithoutPhoto() {
+  // 사진 없이 바로 STEP 3(질문)으로 이동
+  ST.photoType = null;
+  ST.skipPhoto = true;
+  goTo(3);
+}
+
 function startAnalysis() {
   document.getElementById('uploadWarn').style.display = 'none';
-  document.getElementById('btnStart').disabled = true;
   document.getElementById('uploadZone').style.display = 'none';
   document.getElementById('prevWrap').style.display = 'none';
   document.getElementById('analyzing').classList.add('show');
@@ -825,8 +848,9 @@ function renderTypeResult() {
   document.getElementById('r4type').innerHTML  = t + `<span class="ohaeng">${d.oh}</span>`;
   document.getElementById('r4liner').textContent = d.liner;
   document.getElementById('r4desc').textContent  = d.desc;
-  document.getElementById('r4compare').innerHTML =
-    `사진상으로는 <strong>${ST.photoType}</strong>으로 보였지만 실제 행동 기준으로는 <strong>${t}</strong>에 가깝습니다.`;
+  document.getElementById('r4compare').innerHTML = ST.skipPhoto
+    ? `사진 분석 없이 행동 질문 기반으로 <strong>${t}</strong> 성향으로 판별되었습니다.`
+    : `사진상으로는 <strong>${ST.photoType}</strong>으로 보였지만 실제 행동 기준으로는 <strong>${t}</strong>에 가깝습니다.`;
 }
 
 function renderCompat() {
@@ -1011,12 +1035,11 @@ function updateStepBar() {
 }
 
 function resetApp() {
-  ST = {step:1,photoType:null,metrics:null,scores:null,signals:[],qAnswers:{},realType:null};
+  ST = {step:1,photoType:null,metrics:null,scores:null,signals:[],qAnswers:{},realType:null,skipPhoto:false};
   document.getElementById('prevWrap').style.display   = 'none';
   document.getElementById('uploadZone').style.display = '';
   document.getElementById('analyzing').classList.remove('show');
-  document.getElementById('uploadWarn').style.display = '';
-  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStart').disabled = false;
   document.getElementById('fileInput').value  = '';
   ['as1','as2','as3','as4','as5'].forEach(id=>{
     const el=document.getElementById(id);
