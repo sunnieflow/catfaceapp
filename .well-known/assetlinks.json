@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.sunnieflow.twa",
+      "sha256_cert_fingerprints": [
+        "F9:FE:EB:01:2C:B4:03:1A:D6:D1:74:FF:13:55:AF:74:A5:89:1F:FA:72:20:DE:3B:FA:84:D6:A5:96:7A:58:1B"
+      ]
+    }
+  }
+]
