@@ -19,6 +19,8 @@
 <meta property="og:title" content="고양이 관상 🐱">
 <meta property="og:description" content="사진 한 장으로 알아보는 고양이 기질 분석">
 
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4" crossorigin="anonymous"></script>
+
 <script>
 // ── Service Worker 인라인 등록 ──
 if ('serviceWorker' in navigator) {
@@ -207,6 +209,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .reset-link{font-size:.78rem;color:var(--text3);cursor:pointer;text-decoration:underline}
 .reset-link:hover{color:var(--text2)}
 canvas#cv{display:none}
+.btn-share{background:linear-gradient(135deg,#25d567,#1db954);color:#fff;
+  box-shadow:0 4px 20px rgba(29,185,84,.3);font-weight:700;border:none;cursor:pointer}
+.btn-share:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(29,185,84,.4)}
 </style>
 </head>
 <body>
@@ -347,6 +352,7 @@ canvas#cv{display:none}
     <p id="pPartners" style="display:none;font-size:0.72rem;color:var(--text3);line-height:1.6;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06)">이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
   </div>
   <div id="pContainer"></div>
+  <button class="btn btn-share" onclick="shareResult()">💛 결과 카카오톡 공유하기</button>
   <button class="btn btn-ghost" onclick="resetApp()">🔄 처음부터 다시하기</button>
 </section>
 
@@ -1075,6 +1081,48 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
 // ════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════
+// KAKAO SHARE
+// ════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function() {
+  if (window.Kakao && !Kakao.isInitialized()) {
+    Kakao.init('8a2bdd1890e7af8bbed099941e502617');
+  }
+});
+
+async function shareResult() {
+  const type = ST.realType || ST.photoType;
+  const d = type ? REAL_DATA[type] : null;
+  const liner = d ? d.liner : '사진 한 장으로 알아보는 고양이 기질 분석';
+
+  if (!window.Kakao || !Kakao.isInitialized()) {
+    alert('공유 기능을 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+
+  Kakao.Share.sendDefault({
+    objectType: 'feed',
+    content: {
+      title: `🐱 우리 고양이는 ${type}!`,
+      description: liner,
+      imageUrl: 'https://sunnieflow.github.io/catfaceapp/icon-512.png',
+      link: {
+        mobileWebUrl: 'https://sunnieflow.github.io/catfaceapp/',
+        webUrl: 'https://sunnieflow.github.io/catfaceapp/',
+      },
+    },
+    buttons: [
+      {
+        title: '우리 고양이 관상 보기',
+        link: {
+          mobileWebUrl: 'https://sunnieflow.github.io/catfaceapp/',
+          webUrl: 'https://sunnieflow.github.io/catfaceapp/',
+        },
+      },
+    ],
+  });
+}
+
 initQuestions();
 updateStepBar();
 </script>
